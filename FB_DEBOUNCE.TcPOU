@@ -1,0 +1,48 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <POU Name="FB_DEBOUNCE" Id="{c54d3cae-6ffa-4c99-87fd-200976859ebd}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK FB_DEBOUNCE
+VAR_INPUT
+	SignalIn		: BOOL;
+	DebounceDelay	: TIME;
+END_VAR
+VAR_OUTPUT
+	SignalOut		: BOOL;
+END_VAR
+VAR
+	DebounceTimer	: TON;
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[
+
+DebounceTimer.PT := DebounceDelay;
+
+IF SignalIn <> SignalOut THEN
+	DebounceTimer.IN := TRUE;
+	IF DebounceTimer.Q THEN
+		SignalOut := SignalIn;
+		DebounceTimer.IN := FALSE;
+	END_IF
+ELSE
+	DebounceTimer.IN := FALSE;
+END_IF
+
+DebounceTimer();]]></ST>
+    </Implementation>
+    <LineIds Name="FB_DEBOUNCE">
+      <LineId Id="13" Count="1" />
+      <LineId Id="9" Count="0" />
+      <LineId Id="22" Count="0" />
+      <LineId Id="34" Count="0" />
+      <LineId Id="36" Count="0" />
+      <LineId Id="38" Count="1" />
+      <LineId Id="41" Count="0" />
+      <LineId Id="40" Count="0" />
+      <LineId Id="42" Count="1" />
+      <LineId Id="37" Count="0" />
+      <LineId Id="24" Count="0" />
+      <LineId Id="21" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>
