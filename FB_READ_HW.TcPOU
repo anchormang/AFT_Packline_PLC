@@ -1,0 +1,513 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <POU Name="FB_READ_HW" Id="{38d0a033-22ac-41e8-ba5b-56b320f7ade6}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK FB_READ_HW
+VAR_INPUT
+END_VAR
+VAR_OUTPUT
+END_VAR
+VAR
+	ShuttleDebounce	: ARRAY[0..3] OF FB_DEBOUNCE;
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[
+
+ShuttleDebounce[0](SignalIn := IO.DI_Block_0[0], DebounceDelay := T#20MS);
+ShuttleDebounce[1](SignalIn := IO.DI_Block_0[1], DebounceDelay := T#20MS);
+
+// COMPONENT TESTING
+SYS.Scale.ScaleIn.Status 			:= COM.COM1.StatusWord;
+SYS.Scale.ScaleIn.InputLength 		:= COM.COM1.InputLength;
+SYS.Scale.ScaleIn.Data 				:= COM.COM1.DataIn;
+
+// MAIN INPUTS
+PARAM.AUTO_MODE := IO.DI_Slice_0[0];
+// PARAM.AUTO_MODE := TRUE;
+
+// DEBINNER CELL (ROBOT)
+SYS.RobotCell.RobotIN.RobotStatus 				:= ROBOT.Debinner.RobotStatus;
+SYS.RobotCell.RobotIN.RobotAlarmStatus			:= ROBOT.Debinner.RobotAlarmStatus;
+SYS.RobotCell.RobotIN.RobotAxisStatus 			:= ROBOT.Debinner.RobotAxisStatus;
+SYS.RobotCell.RobotIN.RobotCycleStatus 			:= ROBOT.Debinner.RobotCycleStatus;
+SYS.RobotCell.RobotIN.RobotJobSelectedStatus 	:= ROBOT.Debinner.RobotJobSelectedStatus;
+SYS.RobotCell.RobotIN.RobotJobRunStatus 		:= ROBOT.Debinner.RobotJobRunStatus;
+SYS.RobotCell.RobotIN.RobotJobCallStatus 		:= ROBOT.Debinner.RobotJobCallStatus;
+SYS.RobotCell.RobotIN.RobotJobHoldStatus 		:= ROBOT.Debinner.RobotJobHoldStatus;
+SYS.RobotCell.RobotIN.RobotJobHeldStatus 		:= ROBOT.Debinner.RobotJobHeldStatus;
+SYS.RobotCell.RobotIN.RobotSystemStatus 		:= ROBOT.Debinner.RobotSystemStatus;
+SYS.RobotCell.RobotIN.RobotUserInput			:= ROBOT.Debinner.RobotUserInput;
+SYS.RobotCell.RobotIN.RobotAlarmCode1			:= ROBOT.Debinner.RobotAlarmCode1;
+SYS.RobotCell.RobotIN.RobotAlarmCode2			:= ROBOT.Debinner.RobotAlarmCode2;
+SYS.RobotCell.RobotIN.RobotErrorCode1			:= ROBOT.Debinner.RobotErrorCode1;
+SYS.RobotCell.RobotIN.RobotErrorCode2			:= ROBOT.Debinner.RobotErrorCode2;
+		
+SYS.RobotCell.TraySense1						:= ShuttleDebounce[0].SignalOut;		
+SYS.RobotCell.TraySense2						:= ShuttleDebounce[1].SignalOut;
+
+SYS.RobotCell.RobotBuffer.OutFeedBufferSense	:= IO.DI_Block_0[2];
+// SYS.RobotCell.TrayStuckDetection.TraySense		:= IO.DI_Block_0[3];			
+SYS.RobotCell.TrayStuckDetection.TraySense1 	:= IO.DI_Block_0[3];				
+SYS.RobotCell.TrayStuckDetection.TraySense2 	:= IO.DI_Block_0[4];			
+
+SYS.RobotCell.AirPressureOK						:= IO.DI_Block_10[0];			// Need to map this to the hardware device
+// SYS.RobotCell.AirPressureOK						:= TRUE;					// Air pressure error override (until switch is mechanically installed)
+
+// PACK STATION INFEED CONVEYOR (VFD)
+SYS.PackStation.InFeedConvIn.StatusWord 	:= MOTORS.PackInFeedConv.StatusWord;
+SYS.PackStation.InFeedConvIn.ErrorCode 		:= MOTORS.PackInFeedConv.ErrorCode;
+SYS.PackStation.InFeedConvIn.ActualVelocity := MOTORS.PackInFeedConv.ActualVelocity;
+
+// PACK STATION OUTFEED CONVEYOR (VFD)
+SYS.PackStation.OutFeedConvIn.StatusWord 		:= MOTORS.PackOutFeedConv.StatusWord;
+SYS.PackStation.OutFeedConvIn.ErrorCode 		:= MOTORS.PackOutFeedConv.ErrorCode;
+SYS.PackStation.OutFeedConvIn.ActualVelocity 	:= MOTORS.PackOutFeedConv.ActualVelocity;
+
+// PACK STATION ROTARY ACCUMULATOR (VFD)
+SYS.PackStation.RotaryAccumulatorIn.StatusWord		:= MOTORS.RotaryAccumulator.StatusWord;
+SYS.PackStation.RotaryAccumulatorIn.ErrorCode		:= MOTORS.RotaryAccumulator.ErrorCode;
+SYS.PackStation.RotaryAccumulatorIn.ActualVelocity	:= MOTORS.RotaryAccumulator.ActualVelocity;
+
+// FRESH FRUIT DEBIN CONVEYOR (VFD)
+SYS.FreshFruit.DebinConvIN.StatusWord 		:= MOTORS.DebinConv.StatusWord;
+SYS.FreshFruit.DebinConvIN.ErrorCode 		:= MOTORS.DebinConv.ErrorCode;
+SYS.FreshFruit.DebinConvIN.ActualVelocity 	:= MOTORS.DebinConv.ActualVelocity;
+
+// FRESH FRUIT SORT CONVEYOR (VFD)
+SYS.FreshFruit.SortConvIN.StatusWord 		:= MOTORS.SortConv.StatusWord;
+SYS.FreshFruit.SortConvIN.ErrorCode 		:= MOTORS.SortConv.ErrorCode;
+SYS.FreshFruit.SortConvIN.ActualVelocity 	:= MOTORS.SortConv.ActualVelocity;
+
+// FRESH FRUIT LANING CONVEYOR (VFD)
+SYS.FreshFruit.LaneConvIN.StatusWord 		:= MOTORS.LaneConv.StatusWord;
+SYS.FreshFruit.LaneConvIN.ErrorCode 		:= MOTORS.LaneConv.ErrorCode;
+SYS.FreshFruit.LaneConvIN.ActualVelocity 	:= MOTORS.LaneConv.ActualVelocity;
+
+// ROBOT CELL INFEED CONVEYOR (VFD)
+SYS.RobotCell.InFeedConvIN.StatusWord 			:= MOTORS.RobotInFeedConv.StatusWord;
+SYS.RobotCell.InFeedConvIN.OperationModeDisplay := MOTORS.RobotInFeedConv.OperationModeDisplay;
+SYS.RobotCell.InFeedConvIN.ActualVelocity 		:= MOTORS.RobotInFeedConv.ActualVelocity;
+
+// ROBOT CELL OUTFEED CONVEYOR (VFD)
+SYS.RobotCell.OutFeedConvIN.StatusWord 				:= MOTORS.RobotOutFeedConv.StatusWord;
+SYS.RobotCell.OutFeedConvIN.OperationModeDisplay 	:= MOTORS.RobotOutFeedConv.OperationModeDisplay;
+SYS.RobotCell.OutFeedConvIN.ActualVelocity 			:= MOTORS.RobotOutFeedConv.ActualVelocity;
+
+// FILL STATION INFEED CONVEYOR (VFD)
+SYS.FillStation.InFeedConvIN.StatusWord 			:= MOTORS.FillInFeedConv.StatusWord;
+SYS.FillStation.InFeedConvIN.OperationModeDisplay 	:= MOTORS.FillInFeedConv.OperationModeDisplay;
+SYS.FillStation.InFeedConvIN.ActualVelocity 		:= MOTORS.FillInFeedConv.ActualVelocity;
+SYS.FillStation.InFeedConvIN.MotorCurrent			:= MOTORS.FillInFeedConv.MotorCurrent;
+SYS.FillStation.InFeedConvIN.MotorPowerEff			:= MOTORS.FillInFeedConv.MotorPowerEff;
+
+// DENESTER 0 (IO)
+SYS.Denester[0].VacSense1 := IO.DI_Block_4[0];
+SYS.Denester[0].VacSense2 := IO.DI_Block_4[1];
+SYS.Denester[0].ExtendEOT := IO.DI_Block_4[2];
+
+// DENESTER 1 (IO)
+SYS.Denester[1].VacSense1 := IO.DI_Block_3[0];
+SYS.Denester[1].VacSense2 := IO.DI_Block_3[1];
+SYS.Denester[1].ExtendEOT := IO.DI_Block_3[2];
+
+// DENESTER 2 (IO)
+SYS.Denester[2].VacSense1 := IO.DI_Block_2[0];
+SYS.Denester[2].VacSense2 := IO.DI_Block_2[1];
+SYS.Denester[2].ExtendEOT := IO.DI_Block_2[2];
+
+// DENESTER 3 (IO)
+SYS.Denester[3].VacSense1 := IO.DI_Block_1[0];
+SYS.Denester[3].VacSense2 := IO.DI_Block_1[1];
+SYS.Denester[3].ExtendEOT := IO.DI_Block_1[2];
+
+// DENESTER BUFFER SENSORS / FILL STATION JAM SENSORS (IO)
+// SYS.Denester[0].ClamBuffer.BufferSense1 := IO.DI_Block_8[0];
+// SYS.Denester[0].Clambuffer.BufferSense2 := IO.DI_Block_8[1];
+SYS.Denester[0].ClamBufferNew.BufferSense1 := IO.DI_Block_8[0];
+SYS.Denester[0].ClambufferNew.BufferSense2 := IO.DI_Block_8[1];
+// SYS.Denester[1].ClamBuffer.BufferSense1 := IO.DI_Block_8[2];
+// SYS.Denester[1].Clambuffer.BufferSense2 := IO.DI_Block_8[3];
+SYS.Denester[1].ClamBufferNew.BufferSense1 := IO.DI_Block_8[2];
+SYS.Denester[1].ClambufferNew.BufferSense2 := IO.DI_Block_8[3];
+// SYS.Denester[2].ClamBuffer.BufferSense1 := IO.DI_Block_8[4];
+// SYS.Denester[2].Clambuffer.BufferSense2 := IO.DI_Block_8[5];
+SYS.Denester[2].ClamBufferNew.BufferSense1 := IO.DI_Block_8[13];			// Old port #4, new port #13
+SYS.Denester[2].ClambufferNew.BufferSense2 := IO.DI_Block_8[5];
+// SYS.Denester[3].ClamBuffer.BufferSense1 := IO.DI_Block_8[6];
+// SYS.Denester[3].Clambuffer.BufferSense2 := IO.DI_Block_8[7];
+SYS.Denester[3].ClamBufferNew.BufferSense1 := IO.DI_Block_8[6];
+SYS.Denester[3].ClambufferNew.BufferSense2 := IO.DI_Block_8[7];
+
+SYS.FillStation.FillBuffer[0].BufferSense := IO.DI_Block_8[8];	// Originally DI_Block_8[8]
+SYS.FillStation.FillBuffer[1].BufferSense := IO.DI_Block_8[10];	// Originally DI_Block_8[10]
+SYS.FillStation.FillBuffer[2].BufferSense := IO.DI_Block_8[12];	// Originally DI_Block_8[12]
+SYS.FillStation.FillBuffer[3].BufferSense := IO.DI_Block_8[14];	// Originally DI_Block_8[14]
+
+// JUICE COLLECTION CONVEYOR (VFD)
+SYS.Juice.CollectConvIN.StatusWord 				:= MOTORS.JuiceCollectConv.StatusWord;
+SYS.Juice.CollectConvIN.OperationModeDisplay 	:= MOTORS.JuiceCollectConv.OperationModeDisplay;
+SYS.Juice.CollectConvIN.ActualVelocity 			:= MOTORS.JuiceCollectConv.ActualVelocity;
+
+// JUICE DISCHARGE CONVEYOR (VFD)
+SYS.Juice.DischargeConvIN.StatusWord 			:= MOTORS.JuiceDischargeConv.StatusWord;
+SYS.Juice.DischargeConvIN.OperationModeDisplay 	:= MOTORS.JuiceDischargeConv.OperationModeDisplay;
+SYS.Juice.DischargeConvIN.ActualVelocity 		:= MOTORS.JuiceDischargeConv.ActualVelocity;
+
+// JUICE INFEED CONVEYOR (VFD)
+SYS.Juice.InFeedConvIN.StatusWord 				:= MOTORS.JuiceInFeedConv.StatusWord;
+SYS.Juice.InFeedConvIN.OperationModeDisplay 	:= MOTORS.JuiceInFeedConv.OperationModeDisplay;
+SYS.Juice.InFeedConvIN.ActualVelocity 			:= MOTORS.JuiceInFeedConv.ActualVelocity;
+
+// JUICE OUTFEED CONVEYOR (VFD)
+SYS.Juice.OutFeedConvIN.StatusWord 				:= MOTORS.JuiceOutFeedConv.StatusWord;
+SYS.Juice.OutFeedConvIN.OperationModeDisplay 	:= MOTORS.JuiceOutFeedConv.OperationModeDisplay;
+SYS.Juice.OutFeedConvIN.ActualVelocity 			:= MOTORS.JuiceOutFeedConv.ActualVelocity;
+
+// FILL STATION MOTOR 0 (PD4)
+SYS.FillStation.PD4IN[0].StatusWord 				:= MOTORS.FillStationMotor[3].StatusWord;
+SYS.FillStation.PD4IN[0].OperationModeDisplay 		:= MOTORS.FillStationMotor[3].OperationModeDisplay;
+SYS.FillStation.PD4IN[0].ActualPosition 			:= MOTORS.FillStationMotor[3].ActualPosition;
+
+// FILL STATION MOTOR 1 (PD4)
+SYS.FillStation.PD4IN[1].StatusWord 				:= MOTORS.FillStationMotor[2].StatusWord;
+SYS.FillStation.PD4IN[1].OperationModeDisplay 		:= MOTORS.FillStationMotor[2].OperationModeDisplay;
+SYS.FillStation.PD4IN[1].ActualPosition 			:= MOTORS.FillStationMotor[2].ActualPosition;
+
+// FILL STATION MOTOR 2 (PD4)
+SYS.FillStation.PD4IN[2].StatusWord 				:= MOTORS.FillStationMotor[1].StatusWord;
+SYS.FillStation.PD4IN[2].OperationModeDisplay 		:= MOTORS.FillStationMotor[1].OperationModeDisplay;
+SYS.FillStation.PD4IN[2].ActualPosition 			:= MOTORS.FillStationMotor[1].ActualPosition;
+
+// FILL STATION MOTOR 3 (PD4)
+SYS.FillStation.PD4IN[3].StatusWord 				:= MOTORS.FillStationMotor[0].StatusWord;
+SYS.FillStation.PD4IN[3].OperationModeDisplay 		:= MOTORS.FillStationMotor[0].OperationModeDisplay;
+SYS.FillStation.PD4IN[3].ActualPosition 			:= MOTORS.FillStationMotor[0].ActualPosition;
+
+// FILL STATION SENSOR ARRAYS
+SYS.FillStation.SenseArray[0].SenseArray[0] := IO.DI_Block_6[0];
+SYS.FillStation.SenseArray[0].SenseArray[1] := IO.DI_Block_6[1];
+SYS.FillStation.SenseArray[0].SenseArray[2] := IO.DI_Block_6[2];
+SYS.FillStation.SenseArray[0].SenseArray[3] := IO.DI_Block_6[3];
+SYS.FillStation.SenseArray[0].SenseArray[4] := IO.DI_Block_6[4];
+SYS.FillStation.SenseArray[0].SenseArray[5] := IO.DI_Block_6[5];
+SYS.FillStation.SenseArray[0].SenseArray[6] := IO.DI_Block_6[6];
+SYS.FillStation.SenseArray[0].SenseArray[7] := IO.DI_Block_6[7];
+
+SYS.FillStation.SenseArray[1].SenseArray[0] := IO.DI_Block_6[8];
+SYS.FillStation.SenseArray[1].SenseArray[1] := IO.DI_Block_6[9];
+SYS.FillStation.SenseArray[1].SenseArray[2] := IO.DI_Block_6[10];
+SYS.FillStation.SenseArray[1].SenseArray[3] := IO.DI_Block_6[11];
+SYS.FillStation.SenseArray[1].SenseArray[4] := IO.DI_Block_6[12];
+SYS.FillStation.SenseArray[1].SenseArray[5] := IO.DI_Block_6[13];
+SYS.FillStation.SenseArray[1].SenseArray[6] := IO.DI_Block_6[14];
+SYS.FillStation.SenseArray[1].SenseArray[7] := IO.DI_Block_6[15];
+
+SYS.FillStation.SenseArray[2].SenseArray[0] := IO.DI_Block_7[0];
+SYS.FillStation.SenseArray[2].SenseArray[1] := IO.DI_Block_7[1];
+SYS.FillStation.SenseArray[2].SenseArray[2] := IO.DI_Block_7[2];
+SYS.FillStation.SenseArray[2].SenseArray[3] := IO.DI_Block_7[3];
+SYS.FillStation.SenseArray[2].SenseArray[4] := IO.DI_Block_7[4];
+SYS.FillStation.SenseArray[2].SenseArray[5] := IO.DI_Block_7[5];
+SYS.FillStation.SenseArray[2].SenseArray[6] := IO.DI_Block_7[6];
+SYS.FillStation.SenseArray[2].SenseArray[7] := IO.DI_Block_7[7];
+
+SYS.FillStation.SenseArray[3].SenseArray[0] := IO.DI_Block_7[8];
+SYS.FillStation.SenseArray[3].SenseArray[1] := IO.DI_Block_7[9];
+SYS.FillStation.SenseArray[3].SenseArray[2] := IO.DI_Block_7[10];
+SYS.FillStation.SenseArray[3].SenseArray[3] := IO.DI_Block_7[11];
+SYS.FillStation.SenseArray[3].SenseArray[4] := IO.DI_Block_7[12];
+SYS.FillStation.SenseArray[3].SenseArray[5] := IO.DI_Block_7[13];
+SYS.FillStation.SenseArray[3].SenseArray[6] := IO.DI_Block_7[14];
+SYS.FillStation.SenseArray[3].SenseArray[7] := IO.DI_Block_7[15];
+
+// 	PACK STATION BUFFER SENSOR INPUTS
+SYS.PackStation.PackBufferSense[0] := IO.DI_Block_9[0];
+SYS.PackStation.PackBufferSense[1] := IO.DI_Block_9[1];
+SYS.PackStation.PackBufferSense[2] := IO.DI_Block_9[2];
+SYS.PackStation.PackBufferSense[3] := IO.DI_Block_9[3];
+
+// JUICE INPUTS
+SYS.Juice.JuiceBox.JuiceBoxIn := IO.DI_Block_5[0];
+
+// JUICE SERIAL COM (SCALE)
+SYS.Juice.JuiceScaleIn.Status 		:= COM.JuiceScale.StatusWord;
+SYS.Juice.JuiceScaleIn.InputLength 	:= COM.JuiceScale.InputLength;
+SYS.Juice.JuiceScaleIn.Data 		:= COM.JuiceScale.DataIn;
+
+// PACK STATION SERIAL COM 0 (SCALE)
+SYS.PackStation.ScaleIn[0].Status			:= COM.PackScale[0].StatusWord;
+SYS.PackStation.ScaleIn[0].InputLength 		:= COM.PackScale[0].InputLength;
+SYS.PackStation.ScaleIn[0].Data 			:= COM.PackScale[0].DataIn;
+
+// PACK STATION SERIAL COM 1 (SCALE)
+SYS.PackStation.ScaleIn[1].Status			:= COM.PackScale[1].StatusWord;
+SYS.PackStation.ScaleIn[1].InputLength 		:= COM.PackScale[1].InputLength;
+SYS.PackStation.ScaleIn[1].Data 			:= COM.PackScale[1].DataIn;
+
+// PACK STATION SERIAL COM 2 (SCALE)
+SYS.PackStation.ScaleIn[2].Status			:= COM.PackScale[2].StatusWord;
+SYS.PackStation.ScaleIn[2].InputLength 		:= COM.PackScale[2].InputLength;
+SYS.PackStation.ScaleIn[2].Data 			:= COM.PackScale[2].DataIn;
+
+// PACK STATION SERIAL COM 3 (SCALE)
+SYS.PackStation.ScaleIn[3].Status			:= COM.PackScale[3].StatusWord;
+SYS.PackStation.ScaleIn[3].InputLength 		:= COM.PackScale[3].InputLength;
+SYS.PackStation.ScaleIn[3].Data 			:= COM.PackScale[3].DataIn;
+
+// PACK STATION SERIAL COM 4 (SCALE)
+SYS.PackStation.ScaleIn[4].Status			:= COM.PackScale[4].StatusWord;
+SYS.PackStation.ScaleIn[4].InputLength 		:= COM.PackScale[4].InputLength;
+SYS.PackStation.ScaleIn[4].Data 			:= COM.PackScale[4].DataIn;
+
+// PACK STATION SERIAL COM 5 (SCALE)
+SYS.PackStation.ScaleIn[5].Status			:= COM.PackScale[5].StatusWord;
+SYS.PackStation.ScaleIn[5].InputLength 		:= COM.PackScale[5].InputLength;
+SYS.PackStation.ScaleIn[5].Data 			:= COM.PackScale[5].DataIn;
+
+// PACK STATION SERIAL COM 6 (SCALE)
+SYS.PackStation.ScaleIn[6].Status			:= COM.PackScale[6].StatusWord;
+SYS.PackStation.ScaleIn[6].InputLength 		:= COM.PackScale[6].InputLength;
+SYS.PackStation.ScaleIn[6].Data 			:= COM.PackScale[6].DataIn;
+
+// PACK STATION SERIAL COM 7 (SCALE)
+SYS.PackStation.ScaleIn[7].Status			:= COM.PackScale[7].StatusWord;
+SYS.PackStation.ScaleIn[7].InputLength 		:= COM.PackScale[7].InputLength;
+SYS.PackStation.ScaleIn[7].Data 			:= COM.PackScale[7].DataIn;
+
+// PACK STATION SERIAL COM 8 (SCALE)
+SYS.PackStation.ScaleIn[8].Status			:= COM.PackScale[8].StatusWord;
+SYS.PackStation.ScaleIn[8].InputLength 		:= COM.PackScale[8].InputLength;
+SYS.PackStation.ScaleIn[8].Data 			:= COM.PackScale[8].DataIn;
+
+// PACK STATION SERIAL COM 9 (SCALE)
+SYS.PackStation.ScaleIn[9].Status			:= COM.PackScale[9].StatusWord;
+SYS.PackStation.ScaleIn[9].InputLength 		:= COM.PackScale[9].InputLength;
+SYS.PackStation.ScaleIn[9].Data 			:= COM.PackScale[9].DataIn;
+
+// PACK STATION SERIAL COM 10 (SCALE)
+SYS.PackStation.ScaleIn[10].Status			:= COM.PackScale[10].StatusWord;
+SYS.PackStation.ScaleIn[10].InputLength 	:= COM.PackScale[10].InputLength;
+SYS.PackStation.ScaleIn[10].Data 			:= COM.PackScale[10].DataIn;
+
+// PACK STATION SERIAL COM 11 (SCALE)
+SYS.PackStation.ScaleIn[11].Status			:= COM.PackScale[11].StatusWord;
+SYS.PackStation.ScaleIn[11].InputLength 	:= COM.PackScale[11].InputLength;
+SYS.PackStation.ScaleIn[11].Data 			:= COM.PackScale[11].DataIn;
+
+]]></ST>
+    </Implementation>
+    <LineIds Name="FB_READ_HW">
+      <LineId Id="316" Count="3" />
+      <LineId Id="120" Count="0" />
+      <LineId Id="98" Count="0" />
+      <LineId Id="158" Count="0" />
+      <LineId Id="157" Count="0" />
+      <LineId Id="290" Count="0" />
+      <LineId Id="429" Count="0" />
+      <LineId Id="428" Count="0" />
+      <LineId Id="430" Count="0" />
+      <LineId Id="564" Count="0" />
+      <LineId Id="323" Count="0" />
+      <LineId Id="154" Count="0" />
+      <LineId Id="459" Count="0" />
+      <LineId Id="506" Count="0" />
+      <LineId Id="439" Count="1" />
+      <LineId Id="442" Count="0" />
+      <LineId Id="445" Count="0" />
+      <LineId Id="443" Count="1" />
+      <LineId Id="460" Count="2" />
+      <LineId Id="573" Count="3" />
+      <LineId Id="448" Count="1" />
+      <LineId Id="446" Count="0" />
+      <LineId Id="539" Count="0" />
+      <LineId Id="530" Count="0" />
+      <LineId Id="527" Count="0" />
+      <LineId Id="586" Count="0" />
+      <LineId Id="596" Count="0" />
+      <LineId Id="606" Count="0" />
+      <LineId Id="597" Count="0" />
+      <LineId Id="587" Count="0" />
+      <LineId Id="344" Count="0" />
+      <LineId Id="343" Count="0" />
+      <LineId Id="345" Count="2" />
+      <LineId Id="349" Count="3" />
+      <LineId Id="348" Count="0" />
+      <LineId Id="475" Count="0" />
+      <LineId Id="474" Count="0" />
+      <LineId Id="476" Count="2" />
+      <LineId Id="122" Count="0" />
+      <LineId Id="121" Count="0" />
+      <LineId Id="142" Count="1" />
+      <LineId Id="141" Count="0" />
+      <LineId Id="144" Count="0" />
+      <LineId Id="123" Count="0" />
+      <LineId Id="146" Count="1" />
+      <LineId Id="145" Count="0" />
+      <LineId Id="148" Count="0" />
+      <LineId Id="124" Count="0" />
+      <LineId Id="151" Count="1" />
+      <LineId Id="150" Count="0" />
+      <LineId Id="153" Count="0" />
+      <LineId Id="125" Count="0" />
+      <LineId Id="160" Count="1" />
+      <LineId Id="159" Count="0" />
+      <LineId Id="162" Count="0" />
+      <LineId Id="126" Count="0" />
+      <LineId Id="164" Count="1" />
+      <LineId Id="163" Count="0" />
+      <LineId Id="166" Count="0" />
+      <LineId Id="127" Count="0" />
+      <LineId Id="168" Count="1" />
+      <LineId Id="167" Count="0" />
+      <LineId Id="471" Count="0" />
+      <LineId Id="473" Count="0" />
+      <LineId Id="170" Count="0" />
+      <LineId Id="128" Count="0" />
+      <LineId Id="355" Count="2" />
+      <LineId Id="174" Count="0" />
+      <LineId Id="129" Count="0" />
+      <LineId Id="359" Count="1" />
+      <LineId Id="358" Count="0" />
+      <LineId Id="377" Count="0" />
+      <LineId Id="130" Count="0" />
+      <LineId Id="362" Count="1" />
+      <LineId Id="361" Count="0" />
+      <LineId Id="472" Count="0" />
+      <LineId Id="131" Count="0" />
+      <LineId Id="365" Count="1" />
+      <LineId Id="364" Count="0" />
+      <LineId Id="480" Count="0" />
+      <LineId Id="479" Count="0" />
+      <LineId Id="482" Count="0" />
+      <LineId Id="481" Count="0" />
+      <LineId Id="549" Count="0" />
+      <LineId Id="548" Count="0" />
+      <LineId Id="485" Count="0" />
+      <LineId Id="373" Count="0" />
+      <LineId Id="551" Count="0" />
+      <LineId Id="550" Count="0" />
+      <LineId Id="488" Count="0" />
+      <LineId Id="487" Count="0" />
+      <LineId Id="553" Count="0" />
+      <LineId Id="552" Count="0" />
+      <LineId Id="490" Count="0" />
+      <LineId Id="489" Count="0" />
+      <LineId Id="555" Count="0" />
+      <LineId Id="554" Count="0" />
+      <LineId Id="494" Count="0" />
+      <LineId Id="493" Count="0" />
+      <LineId Id="495" Count="2" />
+      <LineId Id="486" Count="0" />
+      <LineId Id="132" Count="0" />
+      <LineId Id="196" Count="1" />
+      <LineId Id="195" Count="0" />
+      <LineId Id="198" Count="0" />
+      <LineId Id="133" Count="0" />
+      <LineId Id="200" Count="1" />
+      <LineId Id="199" Count="0" />
+      <LineId Id="202" Count="0" />
+      <LineId Id="134" Count="0" />
+      <LineId Id="188" Count="1" />
+      <LineId Id="187" Count="0" />
+      <LineId Id="190" Count="0" />
+      <LineId Id="135" Count="0" />
+      <LineId Id="192" Count="1" />
+      <LineId Id="191" Count="0" />
+      <LineId Id="194" Count="0" />
+      <LineId Id="136" Count="0" />
+      <LineId Id="204" Count="1" />
+      <LineId Id="203" Count="0" />
+      <LineId Id="206" Count="0" />
+      <LineId Id="137" Count="0" />
+      <LineId Id="208" Count="1" />
+      <LineId Id="207" Count="0" />
+      <LineId Id="210" Count="0" />
+      <LineId Id="138" Count="0" />
+      <LineId Id="212" Count="1" />
+      <LineId Id="211" Count="0" />
+      <LineId Id="214" Count="0" />
+      <LineId Id="139" Count="0" />
+      <LineId Id="216" Count="1" />
+      <LineId Id="215" Count="0" />
+      <LineId Id="390" Count="0" />
+      <LineId Id="279" Count="0" />
+      <LineId Id="392" Count="7" />
+      <LineId Id="401" Count="0" />
+      <LineId Id="400" Count="0" />
+      <LineId Id="402" Count="6" />
+      <LineId Id="410" Count="16" />
+      <LineId Id="409" Count="0" />
+      <LineId Id="507" Count="0" />
+      <LineId Id="427" Count="0" />
+      <LineId Id="508" Count="3" />
+      <LineId Id="517" Count="0" />
+      <LineId Id="516" Count="0" />
+      <LineId Id="518" Count="0" />
+      <LineId Id="512" Count="0" />
+      <LineId Id="278" Count="0" />
+      <LineId Id="280" Count="2" />
+      <LineId Id="218" Count="0" />
+      <LineId Id="140" Count="0" />
+      <LineId Id="244" Count="0" />
+      <LineId Id="221" Count="0" />
+      <LineId Id="219" Count="0" />
+      <LineId Id="249" Count="0" />
+      <LineId Id="248" Count="0" />
+      <LineId Id="245" Count="0" />
+      <LineId Id="223" Count="0" />
+      <LineId Id="222" Count="0" />
+      <LineId Id="251" Count="0" />
+      <LineId Id="250" Count="0" />
+      <LineId Id="246" Count="0" />
+      <LineId Id="225" Count="0" />
+      <LineId Id="224" Count="0" />
+      <LineId Id="253" Count="0" />
+      <LineId Id="252" Count="0" />
+      <LineId Id="247" Count="0" />
+      <LineId Id="227" Count="0" />
+      <LineId Id="226" Count="0" />
+      <LineId Id="255" Count="0" />
+      <LineId Id="254" Count="0" />
+      <LineId Id="258" Count="0" />
+      <LineId Id="229" Count="0" />
+      <LineId Id="228" Count="0" />
+      <LineId Id="257" Count="0" />
+      <LineId Id="256" Count="0" />
+      <LineId Id="261" Count="0" />
+      <LineId Id="231" Count="0" />
+      <LineId Id="230" Count="0" />
+      <LineId Id="262" Count="0" />
+      <LineId Id="260" Count="0" />
+      <LineId Id="259" Count="0" />
+      <LineId Id="233" Count="0" />
+      <LineId Id="232" Count="0" />
+      <LineId Id="264" Count="0" />
+      <LineId Id="263" Count="0" />
+      <LineId Id="273" Count="0" />
+      <LineId Id="235" Count="0" />
+      <LineId Id="234" Count="0" />
+      <LineId Id="266" Count="0" />
+      <LineId Id="265" Count="0" />
+      <LineId Id="274" Count="0" />
+      <LineId Id="237" Count="0" />
+      <LineId Id="236" Count="0" />
+      <LineId Id="268" Count="0" />
+      <LineId Id="267" Count="0" />
+      <LineId Id="275" Count="0" />
+      <LineId Id="239" Count="0" />
+      <LineId Id="238" Count="0" />
+      <LineId Id="270" Count="0" />
+      <LineId Id="269" Count="0" />
+      <LineId Id="276" Count="0" />
+      <LineId Id="241" Count="0" />
+      <LineId Id="240" Count="0" />
+      <LineId Id="272" Count="0" />
+      <LineId Id="271" Count="0" />
+      <LineId Id="277" Count="0" />
+      <LineId Id="243" Count="0" />
+      <LineId Id="242" Count="0" />
+      <LineId Id="220" Count="0" />
+      <LineId Id="89" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

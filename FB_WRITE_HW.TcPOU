@@ -1,0 +1,307 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <POU Name="FB_WRITE_HW" Id="{cde0cc02-7dce-4ec0-be60-8a270b4a133b}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK FB_WRITE_HW
+VAR_INPUT
+END_VAR
+VAR_OUTPUT
+END_VAR
+VAR
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[
+
+//	COMPONENT TESTING
+COM.COM1.ControlWord 			:= SYS.Scale.ScaleOut.Control;
+
+// IO.TEST_OUT[1]					:= SYS.Shuttle.TrayLift;
+// IO.TEST_OUT[2]					:= SYS.Shuttle.TrayStop1;
+// IO.TEST_OUT[3]					:= SYS.Shuttle.TrayStop2;
+// IO.SafeRun := TRUE;
+// IO.TEST_OUT[1] := TRUE;
+
+// MAIN OUTPUTS
+IO.DO_Slice_0[0] := SYS.StackLight.LED_RED;
+IO.DO_Slice_0[1] := SYS.StackLight.LED_YEL;
+IO.DO_Slice_0[2] := SYS.StackLight.LED_GRN;
+IO.DO_Slice_0[4] := MAIN.SystemStartupAlert;
+
+// DEBINNER CELL (ROBOT)
+ROBOT.Debinner.RobotControl 		:= SYS.RobotCell.Robot.ROBOT_OUT.RobotControl;
+ROBOT.Debinner.RobotHoldControl 	:= SYS.RobotCell.Robot.ROBOT_OUT.RobotHoldControl;
+ROBOT.Debinner.RobotSystemAlarm 	:= SYS.RobotCell.Robot.ROBOT_OUT.RobotSystemAlarm;
+ROBOT.Debinner.RobotSystemMessage 	:= SYS.RobotCell.Robot.ROBOT_OUT.RobotSystemMessage;
+ROBOT.Debinner.RobotUserAlarm 		:= SYS.RobotCell.Robot.ROBOT_OUT.RobotUserAlarm;
+ROBOT.Debinner.RobotUserMessage 	:= SYS.RobotCell.Robot.ROBOT_OUT.RobotUserMessage;
+ROBOT.Debinner.RobotUserOutput		:= SYS.RobotCell.Robot.ROBOT_OUT.RobotUserOutput;
+
+// SHUTTLE OUTPUTS
+// IO.DO_Block_0[0] := SYS.RobotCell.Shuttle.TrayStop2;
+// IO.DO_Block_0[1] := SYS.RobotCell.Shuttle.TrayStop1;
+// IO.DO_Block_0[2] := SYS.RobotCell.Shuttle.TrayLift;
+
+IO.DO_Block_0[0] := NOT SYS.RobotCell.Shuttle.TrayStop2;
+IO.DO_Block_0[1] := NOT SYS.RobotCell.Shuttle.TrayStop1;
+IO.DO_Block_0[2] := NOT SYS.RobotCell.Shuttle.TrayLift;
+
+// PACK STATION INFEED CONVEYOR (VFD)
+MOTORS.PackInFeedConv.ControlWord 		:= SYS.PackStation.InFeedConv.VFD_OUT.ControlWord;
+MOTORS.PackInFeedConv.OperationMode 	:= SYS.PackStation.InFeedConv.VFD_OUT.OperationMode;
+MOTORS.PackInFeedConv.TargetVelocity 	:= SYS.PackStation.InFeedConv.VFD_OUT.TargetVelocity;
+
+// PACK STATION OUTFEED CONVEYOR (VFD)
+MOTORS.PackOutFeedConv.ControlWord 		:= SYS.PackStation.OutFeedConv.VFD_OUT.ControlWord;
+MOTORS.PackOutFeedConv.OperationMode 	:= SYS.PackStation.OutFeedConv.VFD_OUT.OperationMode;
+MOTORS.PackOutFeedConv.TargetVelocity 	:= SYS.PackStation.OutFeedConv.VFD_OUT.TargetVelocity;
+
+// PACK STATION ROTARY ACCUMULATOR (VFD)
+MOTORS.RotaryAccumulator.ControlWord	:= SYS.PackStation.RotaryAccumulator.VFD_OUT.ControlWord;
+MOTORS.RotaryAccumulator.OperationMode	:= SYS.PackStation.RotaryAccumulator.VFD_OUT.OperationMode;
+MOTORS.RotaryAccumulator.TargetVelocity := SYS.PackStation.RotaryAccumulator.VFD_OUT.TargetVelocity;
+
+// FRESH FRUIT DEBIN CONVEYOR (VFD)
+MOTORS.DebinConv.ControlWord 	:= SYS.FreshFruit.DebinConv.VFD_OUT.ControlWord;
+MOTORS.DebinConv.OperationMode 	:= SYS.FreshFruit.DebinConv.VFD_OUT.OperationMode;
+MOTORS.DebinConv.TargetVelocity := SYS.FreshFruit.DebinConv.VFD_OUT.TargetVelocity;
+
+// FRESH FRUIT SORT CONVEYOR (VFD)
+MOTORS.SortConv.ControlWord 	:= SYS.FreshFruit.SortConv.VFD_OUT.ControlWord;
+MOTORS.SortConv.OperationMode 	:= SYS.FreshFruit.SortConv.VFD_OUT.OperationMode;
+MOTORS.SortConv.TargetVelocity 	:= SYS.FreshFruit.SortConv.VFD_OUT.TargetVelocity;
+
+// FRESH FRUIT LANING CONVEYOR (VFD)
+MOTORS.LaneConv.ControlWord 	:= SYS.FreshFruit.LaneConv.VFD_OUT.ControlWord;
+MOTORS.LaneConv.OperationMode 	:= SYS.FreshFruit.LaneConv.VFD_OUT.OperationMode;
+MOTORS.LaneConv.TargetVelocity 	:= SYS.FreshFruit.LaneConv.VFD_OUT.TargetVelocity;
+
+// ROBOT CELL INFEED CONVEYOR (VFD)
+MOTORS.RobotInFeedConv.ControlWord 		:= SYS.RobotCell.InFeedConv.VFD_OUT.ControlWord;
+MOTORS.RobotInFeedConv.OperationMode 	:= SYS.RobotCell.InFeedConv.VFD_OUT.OperationMode;
+MOTORS.RobotInFeedConv.TargetVelocity 	:= SYS.RobotCell.InFeedConv.VFD_OUT.TargetVelocity;
+
+// ROBOT CELL OUTFEED CONVEYOR (VFD)
+MOTORS.RobotOutFeedConv.ControlWord 	:= SYS.RobotCell.OutFeedConv.VFD_OUT.ControlWord;
+MOTORS.RobotOutFeedConv.OperationMode 	:= SYS.RobotCell.OutFeedConv.VFD_OUT.OperationMode;
+MOTORS.RobotOutFeedConv.TargetVelocity 	:= SYS.RobotCell.OutFeedConv.VFD_OUT.TargetVelocity;
+
+// FILL STATION INFEED CONVEYOR (VFD)
+MOTORS.FillInFeedConv.ControlWord 			:= SYS.FillStation.InFeedConv.VFD_OUT.ControlWord;
+MOTORS.FillInFeedConv.OperationMode 		:= SYS.FillStation.InFeedConv.VFD_OUT.OperationMode;
+MOTORS.FillInFeedConv.TargetVelocity 		:= SYS.FillStation.InFeedConv.VFD_OUT.TargetVelocity;
+
+// DENESTER 0 (IO)
+IO.DO_Block_4[1] := SYS.Denester[0].Extend;
+IO.DO_Block_4[2] := SYS.Denester[0].Vac;
+
+// DENESTER 1 (IO)
+IO.DO_Block_3[1] := SYS.Denester[1].Extend;
+IO.DO_Block_3[2] := SYS.Denester[1].Vac;
+
+// DENESTER 2 (IO)
+IO.DO_Block_2[1] := SYS.Denester[2].Extend;
+IO.DO_Block_2[2] := SYS.Denester[2].Vac;
+
+// DENESTER 3 (IO)
+IO.DO_Block_1[1] := SYS.Denester[3].Extend;
+IO.DO_Block_1[2] := SYS.Denester[3].Vac;
+
+// JUICE OUTPUTS
+IO.DO_Block_5[0] := SYS.Juice.Push;
+
+// JUICE COLLECTION CONVEYOR (VFD)
+MOTORS.JuiceCollectConv.ControlWord 		:= SYS.Juice.CollectConv.VFD_OUT.ControlWord;
+MOTORS.JuiceCollectConv.OperationMode 		:= SYS.Juice.CollectConv.VFD_OUT.OperationMode;
+MOTORS.JuiceCollectConv.TargetVelocity 		:= SYS.Juice.CollectConv.VFD_OUT.TargetVelocity;
+
+// JUICE DISCHARGE CONVEYOR (VFD)
+MOTORS.JuiceDischargeConv.ControlWord 		:= SYS.Juice.DischargeConv.VFD_OUT.ControlWord;
+MOTORS.JuiceDischargeConv.OperationMode 	:= SYS.Juice.DischargeConv.VFD_OUT.OperationMode;
+MOTORS.JuiceDischargeConv.TargetVelocity 	:= SYS.Juice.DischargeConv.VFD_OUT.TargetVelocity;
+
+// JUICE INFEED CONVEYOR (VFD)
+MOTORS.JuiceInFeedConv.ControlWord 			:= SYS.Juice.InFeedConv.VFD_OUT.ControlWord;
+MOTORS.JuiceInFeedConv.OperationMode 		:= SYS.Juice.InFeedConv.VFD_OUT.OperationMode;
+MOTORS.JuiceInFeedConv.TargetVelocity 		:= SYS.Juice.InFeedConv.VFD_OUT.TargetVelocity;
+
+// JUICE OUTFEED CONVEYOR (VFD)
+MOTORS.JuiceOutFeedConv.ControlWord 		:= SYS.Juice.OutFeedConv.VFD_OUT.ControlWord;
+MOTORS.JuiceOutFeedConv.OperationMode 		:= SYS.Juice.OutFeedConv.VFD_OUT.OperationMode;
+MOTORS.JuiceOutFeedConv.TargetVelocity 		:= SYS.Juice.OutFeedConv.VFD_OUT.TargetVelocity;
+
+// FILL STATION MOTOR 0 (PD4)
+MOTORS.FillStationMotor[3].ControlWord 		:= SYS.FillStation.PD4[0].PD4_OUT.ControlWord;
+MOTORS.FillStationMotor[3].OperationMode 	:= SYS.FillStation.PD4[0].PD4_OUT.OperationMode;
+MOTORS.FillStationMotor[3].SubmodeSelect 	:= SYS.FillStation.PD4[0].PD4_OUT.SubmodeSelect;
+MOTORS.FillStationMotor[3].Polarity			:= SYS.FillStation.PD4[0].PD4_OUT.Polarity;
+MOTORS.FillStationMotor[3].HomingMethod 	:= SYS.FillStation.PD4[0].PD4_OUT.HomingMethod;
+MOTORS.FillStationMotor[3].TargetVelocity 	:= SYS.FillStation.PD4[0].PD4_OUT.TargetVelocity;
+
+// FILL STATION MOTOR 1 (PD4)
+MOTORS.FillStationMotor[2].ControlWord 		:= SYS.FillStation.PD4[1].PD4_OUT.ControlWord;
+MOTORS.FillStationMotor[2].OperationMode 	:= SYS.FillStation.PD4[1].PD4_OUT.OperationMode;
+MOTORS.FillStationMotor[2].SubmodeSelect 	:= SYS.FillStation.PD4[1].PD4_OUT.SubmodeSelect;
+MOTORS.FillStationMotor[2].Polarity			:= SYS.FillStation.PD4[1].PD4_OUT.Polarity;
+MOTORS.FillStationMotor[2].HomingMethod 	:= SYS.FillStation.PD4[1].PD4_OUT.HomingMethod;
+MOTORS.FillStationMotor[2].TargetVelocity 	:= SYS.FillStation.PD4[1].PD4_OUT.TargetVelocity;
+
+// FILL STATION MOTOR 2 (PD4)
+MOTORS.FillStationMotor[1].ControlWord 		:= SYS.FillStation.PD4[2].PD4_OUT.ControlWord;
+MOTORS.FillStationMotor[1].OperationMode 	:= SYS.FillStation.PD4[2].PD4_OUT.OperationMode;
+MOTORS.FillStationMotor[1].SubmodeSelect 	:= SYS.FillStation.PD4[2].PD4_OUT.SubmodeSelect;
+MOTORS.FillStationMotor[1].Polarity			:= SYS.FillStation.PD4[2].PD4_OUT.Polarity;
+MOTORS.FillStationMotor[1].HomingMethod 	:= SYS.FillStation.PD4[2].PD4_OUT.HomingMethod;
+MOTORS.FillStationMotor[1].TargetVelocity 	:= SYS.FillStation.PD4[2].PD4_OUT.TargetVelocity;
+
+// FILL STATION MOTOR 3 (PD4)
+MOTORS.FillStationMotor[0].ControlWord 		:= SYS.FillStation.PD4[3].PD4_OUT.ControlWord;
+MOTORS.FillStationMotor[0].OperationMode 	:= SYS.FillStation.PD4[3].PD4_OUT.OperationMode;
+MOTORS.FillStationMotor[0].SubmodeSelect 	:= SYS.FillStation.PD4[3].PD4_OUT.SubmodeSelect;
+MOTORS.FillStationMotor[0].Polarity			:= SYS.FillStation.PD4[3].PD4_OUT.Polarity;
+MOTORS.FillStationMotor[0].HomingMethod 	:= SYS.FillStation.PD4[3].PD4_OUT.HomingMethod;
+MOTORS.FillStationMotor[0].TargetVelocity 	:= SYS.FillStation.PD4[3].PD4_OUT.TargetVelocity;
+
+// JUICE SERIAL COMS (SCALE)
+COM.JuiceScale.ControlWord	:= SYS.Juice.JuiceScale.ScaleOut.Control;
+
+// PACK STATION SERIAL COMS (SCALE)
+COM.PackScale[0].ControlWord 	:= SYS.PackStation.Scale[0].ScaleOut.Control;
+COM.PackScale[1].ControlWord 	:= SYS.PackStation.Scale[1].ScaleOut.Control;
+COM.PackScale[2].ControlWord 	:= SYS.PackStation.Scale[2].ScaleOut.Control;
+COM.PackScale[3].ControlWord 	:= SYS.PackStation.Scale[3].ScaleOut.Control;
+COM.PackScale[4].ControlWord 	:= SYS.PackStation.Scale[4].ScaleOut.Control;
+COM.PackScale[5].ControlWord 	:= SYS.PackStation.Scale[5].ScaleOut.Control;
+COM.PackScale[6].ControlWord 	:= SYS.PackStation.Scale[6].ScaleOut.Control;
+COM.PackScale[7].ControlWord 	:= SYS.PackStation.Scale[7].ScaleOut.Control;
+COM.PackScale[8].ControlWord 	:= SYS.PackStation.Scale[8].ScaleOut.Control;
+COM.PackScale[9].ControlWord 	:= SYS.PackStation.Scale[9].ScaleOut.Control;
+COM.PackScale[10].ControlWord 	:= SYS.PackStation.Scale[10].ScaleOut.Control;
+COM.PackScale[11].ControlWord 	:= SYS.PackStation.Scale[11].ScaleOut.Control;]]></ST>
+    </Implementation>
+    <LineIds Name="FB_WRITE_HW">
+      <LineId Id="11" Count="0" />
+      <LineId Id="97" Count="0" />
+      <LineId Id="78" Count="0" />
+      <LineId Id="180" Count="0" />
+      <LineId Id="196" Count="0" />
+      <LineId Id="204" Count="1" />
+      <LineId Id="231" Count="0" />
+      <LineId Id="223" Count="0" />
+      <LineId Id="213" Count="0" />
+      <LineId Id="279" Count="0" />
+      <LineId Id="182" Count="0" />
+      <LineId Id="281" Count="0" />
+      <LineId Id="284" Count="1" />
+      <LineId Id="343" Count="0" />
+      <LineId Id="280" Count="0" />
+      <LineId Id="181" Count="0" />
+      <LineId Id="293" Count="5" />
+      <LineId Id="312" Count="0" />
+      <LineId Id="300" Count="0" />
+      <LineId Id="299" Count="0" />
+      <LineId Id="302" Count="0" />
+      <LineId Id="304" Count="0" />
+      <LineId Id="335" Count="0" />
+      <LineId Id="352" Count="2" />
+      <LineId Id="351" Count="0" />
+      <LineId Id="239" Count="1" />
+      <LineId Id="243" Count="0" />
+      <LineId Id="245" Count="1" />
+      <LineId Id="242" Count="0" />
+      <LineId Id="241" Count="0" />
+      <LineId Id="248" Count="1" />
+      <LineId Id="247" Count="0" />
+      <LineId Id="314" Count="0" />
+      <LineId Id="313" Count="0" />
+      <LineId Id="315" Count="2" />
+      <LineId Id="98" Count="0" />
+      <LineId Id="88" Count="0" />
+      <LineId Id="87" Count="0" />
+      <LineId Id="89" Count="1" />
+      <LineId Id="101" Count="0" />
+      <LineId Id="99" Count="0" />
+      <LineId Id="92" Count="1" />
+      <LineId Id="91" Count="0" />
+      <LineId Id="102" Count="0" />
+      <LineId Id="100" Count="0" />
+      <LineId Id="95" Count="1" />
+      <LineId Id="94" Count="0" />
+      <LineId Id="103" Count="0" />
+      <LineId Id="21" Count="0" />
+      <LineId Id="35" Count="2" />
+      <LineId Id="105" Count="0" />
+      <LineId Id="104" Count="0" />
+      <LineId Id="40" Count="1" />
+      <LineId Id="39" Count="0" />
+      <LineId Id="106" Count="0" />
+      <LineId Id="23" Count="0" />
+      <LineId Id="22" Count="0" />
+      <LineId Id="24" Count="1" />
+      <LineId Id="108" Count="0" />
+      <LineId Id="107" Count="0" />
+      <LineId Id="250" Count="1" />
+      <LineId Id="117" Count="0" />
+      <LineId Id="116" Count="0" />
+      <LineId Id="252" Count="0" />
+      <LineId Id="118" Count="0" />
+      <LineId Id="253" Count="0" />
+      <LineId Id="109" Count="0" />
+      <LineId Id="254" Count="0" />
+      <LineId Id="124" Count="0" />
+      <LineId Id="255" Count="0" />
+      <LineId Id="123" Count="0" />
+      <LineId Id="256" Count="0" />
+      <LineId Id="125" Count="0" />
+      <LineId Id="325" Count="0" />
+      <LineId Id="129" Count="0" />
+      <LineId Id="326" Count="1" />
+      <LineId Id="128" Count="0" />
+      <LineId Id="147" Count="1" />
+      <LineId Id="146" Count="0" />
+      <LineId Id="131" Count="0" />
+      <LineId Id="130" Count="0" />
+      <LineId Id="150" Count="1" />
+      <LineId Id="149" Count="0" />
+      <LineId Id="133" Count="0" />
+      <LineId Id="136" Count="0" />
+      <LineId Id="141" Count="1" />
+      <LineId Id="140" Count="0" />
+      <LineId Id="135" Count="0" />
+      <LineId Id="134" Count="0" />
+      <LineId Id="144" Count="1" />
+      <LineId Id="143" Count="0" />
+      <LineId Id="152" Count="0" />
+      <LineId Id="119" Count="0" />
+      <LineId Id="26" Count="1" />
+      <LineId Id="264" Count="0" />
+      <LineId Id="268" Count="0" />
+      <LineId Id="29" Count="1" />
+      <LineId Id="162" Count="0" />
+      <LineId Id="161" Count="0" />
+      <LineId Id="32" Count="1" />
+      <LineId Id="265" Count="0" />
+      <LineId Id="269" Count="0" />
+      <LineId Id="34" Count="0" />
+      <LineId Id="31" Count="0" />
+      <LineId Id="164" Count="0" />
+      <LineId Id="163" Count="0" />
+      <LineId Id="154" Count="1" />
+      <LineId Id="267" Count="0" />
+      <LineId Id="270" Count="0" />
+      <LineId Id="156" Count="0" />
+      <LineId Id="153" Count="0" />
+      <LineId Id="166" Count="0" />
+      <LineId Id="165" Count="0" />
+      <LineId Id="158" Count="1" />
+      <LineId Id="266" Count="0" />
+      <LineId Id="271" Count="0" />
+      <LineId Id="160" Count="0" />
+      <LineId Id="157" Count="0" />
+      <LineId Id="186" Count="0" />
+      <LineId Id="185" Count="0" />
+      <LineId Id="187" Count="0" />
+      <LineId Id="69" Count="0" />
+      <LineId Id="167" Count="12" />
+    </LineIds>
+  </POU>
+</TcPlcObject>
